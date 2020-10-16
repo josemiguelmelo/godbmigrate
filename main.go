@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	defaultConfigName     = "config.yml"
+	defaultConfigName     = "godbmigrate.yml"
 	defaultConfigLocation = "."
 
 	defaultMigrationFolder = "./db/migrations"
