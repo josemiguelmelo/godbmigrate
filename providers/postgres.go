@@ -61,6 +61,27 @@ func (m *PostgresMigrator) InsertIntoMigrationsTable(migrationName string, runID
 	return res.Error
 }
 
+func (m *PostgresMigrator) DeleteFromMigrationsTable(migrationName string, runID string) error {
+	res := m.db.Exec("DELETE FROM schema_migrations WHERE name = ? and migration_id = ?", migrationName, runID)
+	return res.Error
+}
+
+func (m *PostgresMigrator) LastMigrationRunID() (string, error) {
+	var runID string
+	res := m.db.Raw("SELECT migration_id FROM schema_migrations ORDER BY created_at DESC LIMIT 1").
+		Scan(&runID)
+	return runID, res.Error
+}
+
+func (m *PostgresMigrator) FetchMigrationsByRunID(runID string) ([]string, error) {
+	var migrations []string
+	res := m.db.Raw(
+		"SELECT name FROM schema_migrations WHERE migration_id = ? ORDER BY created_at DESC LIMIT 1",
+		runID,
+	).Scan(&migrations)
+	return migrations, res.Error
+}
+
 func (m *PostgresMigrator) MigrationAlreadyRun(migrationName string) bool {
 	var res int
 	m.db.Raw("SELECT count(*) as count from schema_migrations where name = ?", migrationName).Scan(&res)
