@@ -1,0 +1,9 @@
+database:
+    provider: postgres
+    connectionUri: "user=example password=password DB.name=exampledb port=5432 host=localhost sslmode=disable"
+    # if connectionUri is set, don't need to add the following:
+    username: example
+    password: password
+    database: exampledb
+    host: localhost
+    port: 5432
