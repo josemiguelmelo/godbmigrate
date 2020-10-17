@@ -14,9 +14,11 @@ const (
 	defaultConfigLocation = "."
 
 	defaultMigrationFolder = "./db/migrations"
+	toolVersion            = "0.0.1"
 )
 
 func main() {
+	version := flag.Bool("v", false, "Utility version")
 	runMigration := flag.Bool("migrate", false, "Run migrations")
 	runMigrationRollback := flag.Bool("migrate-rollback", false, "Run migrations")
 
@@ -25,6 +27,11 @@ func main() {
 
 	migrationFolder := flag.String("migration-folder", defaultMigrationFolder, "Migration folders")
 	flag.Parse()
+
+	if *version {
+		fmt.Printf("godbmigrate version %s\n", toolVersion)
+		return
+	}
 
 	if *runMigration && *runMigrationRollback {
 		panic("Cannot use migration and migration-rollback together")
