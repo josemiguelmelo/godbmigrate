@@ -29,21 +29,26 @@ func NewMigrationReaderStatic() *MigrationReader {
 	return &MigrationReader{}
 }
 
-func (m *MigrationReader) sortMigrationsList(migrations []Migration) {
-	sort.SliceStable(migrations, func(i, j int) bool {
-		firstNameSplitted := strings.Split(migrations[i].name, "_")
-		secondNameSplitted := strings.Split(migrations[j].name, "_")
+func migrationIndexFromName(name string) (int, error) {
+	nameParts := strings.Split(name, "_")
+	return strconv.Atoi(nameParts[0])
+}
 
-		firstNameIndex, err := strconv.Atoi(firstNameSplitted[0])
+func (m *MigrationReader) sortMigrationsList(migrations []Migration) []Migration {
+	sort.SliceStable(migrations, func(i, j int) bool {
+		firstNameIndex, err := migrationIndexFromName(migrations[i].name)
 		if err != nil {
 			panic(err)
 		}
-		secondNameIndex, err := strconv.Atoi(secondNameSplitted[0])
+
+		secondNameIndex, err := migrationIndexFromName(migrations[j].name)
 		if err != nil {
 			panic(err)
 		}
+
 		return firstNameIndex < secondNameIndex
 	})
+	return migrations
 }
 
 func (m *MigrationReader) ListAllMigrations(migrationRootFolder string) []Migration {
@@ -59,7 +64,7 @@ func (m *MigrationReader) ListAllMigrations(migrationRootFolder string) []Migrat
 		panic(err)
 	}
 
-	return migrations
+	return m.sortMigrationsList(migrations)
 }
 
 func (m *MigrationReader) Read() (string, error) {
