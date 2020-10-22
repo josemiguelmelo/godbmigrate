@@ -5,6 +5,9 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sort"
+	"strconv"
+	"strings"
 )
 
 const (
@@ -26,19 +29,37 @@ func NewMigrationReaderStatic() *MigrationReader {
 	return &MigrationReader{}
 }
 
+func (m *MigrationReader) sortMigrationsList(migrations []Migration) {
+	sort.SliceStable(migrations, func(i, j int) bool {
+		firstNameSplitted := strings.Split(migrations[i].name, "_")
+		secondNameSplitted := strings.Split(migrations[j].name, "_")
+
+		firstNameIndex, err := strconv.Atoi(firstNameSplitted[0])
+		if err != nil {
+			panic(err)
+		}
+		secondNameIndex, err := strconv.Atoi(secondNameSplitted[0])
+		if err != nil {
+			panic(err)
+		}
+		return firstNameIndex < secondNameIndex
+	})
+}
+
 func (m *MigrationReader) ListAllMigrations(migrationRootFolder string) []Migration {
-	var files []Migration
+	var migrations []Migration
 
 	err := filepath.Walk(migrationRootFolder, func(path string, info os.FileInfo, err error) error {
 		if path != migrationRootFolder {
-			files = append(files, *NewMigration(path))
+			migrations = append(migrations, *NewMigration(path))
 		}
 		return nil
 	})
 	if err != nil {
 		panic(err)
 	}
-	return files
+
+	return migrations
 }
 
 func (m *MigrationReader) Read() (string, error) {
