@@ -20,8 +20,6 @@ type MigrationReader struct {
 }
 
 func NewMigrationReader(migrationLocation string) *MigrationReader {
-	migrationLocation = normalizePath(migrationLocation)
-
 	return &MigrationReader{
 		MigrationLocation: &migrationLocation,
 	}
@@ -29,10 +27,6 @@ func NewMigrationReader(migrationLocation string) *MigrationReader {
 
 func NewMigrationReaderStatic() *MigrationReader {
 	return &MigrationReader{}
-}
-
-func normalizePath(path string) string {
-	return strings.ReplaceAll(path, "/", string(os.PathSeparator))
 }
 
 func migrationIndexFromName(name string) (int, error) {
@@ -57,10 +51,9 @@ func (m *MigrationReader) sortMigrationsList(migrations []Migration) []Migration
 	return migrations
 }
 
+// ListAllMigrations Lists all migrations inside folder
 func (m *MigrationReader) ListAllMigrations(migrationRootFolder string) []Migration {
 	var migrations []Migration
-
-	migrationRootFolder = normalizePath(migrationRootFolder)
 
 	err := filepath.Walk(migrationRootFolder, func(path string, info os.FileInfo, err error) error {
 		if path != migrationRootFolder {
