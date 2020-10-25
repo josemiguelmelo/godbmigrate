@@ -31,6 +31,7 @@ func (m *MigrationRunner) migrationSuccessfullyRolledback(migration Migration, r
 	m.migrator.DeleteFromMigrationsTable(migration.name, runID)
 }
 
+// RunDown Run rollback migrations
 func (m *MigrationRunner) RunDown() {
 	migrationRunID, err := m.migrator.LastMigrationRunID()
 	if err != nil {

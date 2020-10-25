@@ -51,6 +51,7 @@ func (m *MigrationReader) sortMigrationsList(migrations []Migration) []Migration
 	return migrations
 }
 
+// ListAllMigrations Lists all migrations inside folder
 func (m *MigrationReader) ListAllMigrations(migrationRootFolder string) []Migration {
 	var migrations []Migration
 
