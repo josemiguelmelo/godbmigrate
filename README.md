@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/josemiguelmelo/godbmigrate.svg?branch=master)](https://travis-ci.org/josemiguelmelo/godbmigrate)
+
 # Godbmigrate
 
 GoLang database migrations made simple.
