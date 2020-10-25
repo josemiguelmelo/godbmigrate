@@ -12,6 +12,7 @@ type MigrationRunner struct {
 	migrationsFolder string
 }
 
+// NewMigrationRunner Instantiate new migration runner
 func NewMigrationRunner(migrator MigratorInterface, location string) *MigrationRunner {
 	migrationReader := NewMigrationReaderStatic()
 	return &MigrationRunner{
@@ -21,14 +22,19 @@ func NewMigrationRunner(migrator MigratorInterface, location string) *MigrationR
 	}
 }
 
-func (m *MigrationRunner) migrationSuccessfullyRun(migration Migration, runID string) {
+func (m *MigrationRunner) migrationSuccessfullyRun(migration Migration, runID string) error {
 	fmt.Printf("%s run successfully!\n", migration.name)
-	m.migrator.InsertIntoMigrationsTable(migration.name, runID)
+	return m.migrator.InsertIntoMigrationsTable(migration.name, runID)
 }
 
-func (m *MigrationRunner) migrationSuccessfullyRolledback(migration Migration, runID string) {
+func (m *MigrationRunner) migrationSuccessfullyRolledback(migration Migration, runID string) error {
 	fmt.Printf("%s rolled back successfully!\n", migration.name)
-	m.migrator.DeleteFromMigrationsTable(migration.name, runID)
+	return m.migrator.DeleteFromMigrationsTable(migration.name, runID)
+}
+
+func (m *MigrationRunner) migrationFailed(err error) {
+	m.migrator.RollbackTransaction()
+	panic(err)
 }
 
 // RunDown Run rollback migrations
@@ -61,12 +67,12 @@ func (m *MigrationRunner) RunDown() {
 				err = m.migrator.RunMigration(migrationQuery)
 				if err != nil {
 					fmt.Printf("Error rolling back migration %s: %s\n", migration.name, err)
-					m.migrator.RollbackTransaction()
-					panic(err)
+					m.migrationFailed(err)
 				} else {
-					m.migrationSuccessfullyRolledback(migration, migrationRunID)
+					if err = m.migrationSuccessfullyRolledback(migration, migrationRunID); err != nil {
+						m.migrationFailed(err)
+					}
 				}
-
 			}
 		}
 	}
@@ -74,8 +80,12 @@ func (m *MigrationRunner) RunDown() {
 	m.migrator.CommitTransaction()
 }
 
+// RunUp Run migration
 func (m *MigrationRunner) RunUp() {
-	m.migrator.CreateMigrationsTable()
+	err := m.migrator.CreateMigrationsTable()
+	if err != nil {
+		panic("Could not create migrations table" + err.Error())
+	}
 
 	migrationUUUID, _ := uuid.NewRandom()
 	migrationID := migrationUUUID.String()
@@ -94,17 +104,17 @@ func (m *MigrationRunner) RunUp() {
 		migrationQuery, err := migration.Up()
 		if err != nil {
 			fmt.Printf("Error parsing migration %s: %s\n", migration.name, err)
-			m.migrator.RollbackTransaction()
-			panic(err)
+			m.migrationFailed(err)
 		}
 		err = m.migrator.RunMigration(migrationQuery)
 
 		if err != nil {
 			fmt.Printf("Error running migration %s: %s\n", migration.name, err)
-			m.migrator.RollbackTransaction()
-			panic(err)
+			m.migrationFailed(err)
 		} else {
-			m.migrationSuccessfullyRun(migration, migrationID)
+			if err = m.migrationSuccessfullyRun(migration, migrationID); err != nil {
+				m.migrationFailed(err)
+			}
 		}
 
 		fmt.Println("")
