@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/josemiguelmelo/godbmigrate.svg?branch=master)](https://travis-ci.org/josemiguelmelo/godbmigrate)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/f0aac8ea2341496db82bd2ecb7c049e9)](https://www.codacy.com/gh/josemiguelmelo/godbmigrate/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=josemiguelmelo/godbmigrate&amp;utm_campaign=Badge_Grade)
 
 # Godbmigrate
 
